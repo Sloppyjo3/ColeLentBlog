@@ -1,0 +1,63 @@
+body {
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    background-color: rgba(255, 0, 217, 0.354);
+    color: aliceblue;
+    background-image: url('https://wallpapercat.com/w/full/5/f/3/2120472-3840x2160-desktop-4k-pokemon-background-image.jpg');
+    background-size: cover; /* This ensures the image covers the whole background */
+    background-position: center center; /* This ensures the image is centered */
+    background-repeat: no-repeat; /* This prevents the image from repeating */
+}
+
+/* Adjusting the link text and background color to match the aesthetic */
+a {
+    color: #ff6347; /* Pokémon red color */
+    background-color: rgba(255, 255, 255, 0.8); /* Light background to make text stand out */
+    padding: 5px 10px;
+    border-radius: 5px;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #fff;
+    background-color: #ff4500; /* Darker red on hover */
+}
+
+/* Adjusting the list item hover effects */
+li {
+    width: fit-content;
+}
+
+li:hover {
+    text-decoration: underline;
+    background-color: rgba(255, 0, 217, 0.5); /* Light pinkish Pokémon color for hover effect */
+    color: white; /* Change text color to white when hovered */
+}
+
+/* Navigation links */
+nav a {
+    color: #ff6347; /* Pokémon red for nav links */
+    text-decoration: none;
+    margin: 0 10px;
+}
+
+nav a:hover {
+    text-decoration: underline;
+    color: #ff4500; /* Darker red for hover */
+}
+
+h1,
+h2 {
+    text-align: center;
+    color: #ff6347; /* Pokémon red for headings */
+}
+
+img {
+    border: 3px solid orange;
+    height: 150px;
+    border-radius: 10px;
+}
+
+/* Ensures good spacing around the text and images */
+.container {
+    padding: 20px;
+}

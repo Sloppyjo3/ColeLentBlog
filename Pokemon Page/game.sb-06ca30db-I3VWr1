@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keyboard Hero</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column; /* Stack elements vertically */
+            align-items: center;
+            justify-content: center; /* Center vertically too */
+            min-height: 100vh;
+            background: linear-gradient(to bottom, #232323, #000000); /* Dark gradient */
+            margin: 0;
+            font-family: 'Press Start 2P', cursive; /* Apply arcade font */
+            color: #fff;
+            overflow: hidden; /* Prevent scrollbars */
+        }
+
+        h1 {
+            margin-bottom: 10px;
+            color: #f0f0f0;
+            text-shadow: 2px 2px #ff00ff; /* Neon pink shadow */
+        }
+
+        #instructions {
+            margin-bottom: 20px;
+            font-size: 0.8em;
+            color: #cccccc;
+        }
+
+        #game-container {
+            position: relative; /* Needed for absolute positioning of UI */
+            border: 4px solid #555;
+            border-radius: 10px; /* Rounded corners */
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3); /* Subtle glow */
+            background-color: rgba(0, 0, 0, 0.3); /* Slightly transparent background */
+        }
+
+        canvas {
+            display: block; /* Remove extra space below canvas */
+            background-color: transparent; /* Make canvas transparent */
+            border-radius: 6px; /* Match container rounding */
+        }
+
+        #ui-container {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.2em;
+            pointer-events: none; /* Allow clicks to pass through to canvas if needed */
+            color: #fff;
+            text-shadow: 1px 1px #000;
+        }
+
+        #score, #streak {
+             background-color: rgba(0, 0, 0, 0.5);
+             padding: 5px 10px;
+             border-radius: 5px;
+        }
+
+         /* Styling for buttons (optional, if added later) */
+         button {
+            font-family: 'Press Start 2P', cursive;
+            padding: 10px 20px;
+            margin-top: 20px;
+            font-size: 1em;
+            color: #fff;
+            background: linear-gradient(to bottom, #8a2be2, #4b0082); /* Purple gradient */
+            border: 2px solid #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px #2e0050; /* Button shadow */
+            cursor: pointer;
+            transition: all 0.1s ease;
+         }
+
+         button:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px #2e0050;
+         }
+
+         /* Hit zone feedback animation */
+         @keyframes hit-flash {
+            0% { background-color: rgba(255, 255, 255, 0.5); }
+            100% { background-color: rgba(255, 255, 255, 0.2); }
+         }
+         .hit-flash {
+            animation: hit-flash 0.15s ease-out;
+         }
+
+    </style>
+</head>
+<body>
+    <h1>Keyboard Hero</h1>
+    <p id="instructions">Hit the notes! Keys: D, F, J, K</p>
+
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+        <div id="ui-container">
+            <div id="score">Score: 0</div>
+            <div id="streak">Streak: 0</div>
+        </div>
+    </div>
+
+    <script>
+        // --- DOM Elements ---
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreDisplay = document.getElementById('score');
+        const streakDisplay = document.getElementById('streak');
+        const gameContainer = document.getElementById('game-container');
+        // const startButton = document.getElementById('start-button'); // If using a start button
+
+        // --- Game Constants ---
+        const NUM_LANES = 4;
+        const LANE_KEYS = ['D', 'F', 'J', 'K']; // Keys corresponding to lanes
+        const LANE_COLORS = ['#FF6666', '#66FF66', '#6666FF', '#FFFF66']; // Red, Green, Blue, Yellow
+        const HIT_ZONE_HEIGHT = 40;
+        const NOTE_HEIGHT = 20;
+        const NOTE_SPEED = 3; // Pixels per frame
+        const HIT_TOLERANCE = HIT_ZONE_HEIGHT * 0.8; // How close to the center of hit zone to count
+        const NOTE_SPAWN_RATE = 0.03; // Probability of a note spawning per lane per frame (adjust for difficulty)
+
+        // --- Game Variables ---
+        let canvasWidth;
+        let canvasHeight;
+        let laneWidth;
+        let notes = []; // Array to hold active notes
+        let score = 0;
+        let streak = 0;
+        let hitZoneY;
+        let gameRunning = true; // Start game immediately for now
+        let laneHitFeedback = {}; // Track feedback animation for lanes
+
+        // --- Note Object ---
+        // Represents a single falling note
+        class Note {
+            constructor(lane) {
+                this.lane = lane; // 0 to NUM_LANES - 1
+                this.x = lane * laneWidth + (laneWidth / 2); // Center of the lane
+                this.y = -NOTE_HEIGHT; // Start above the canvas
+                this.key = LANE_KEYS[lane];
+                this.color = LANE_COLORS[lane];
+                this.active = true; // Note is currently in play
+            }
+
+            // Move the note down
+            update() {
+                this.y += NOTE_SPEED;
+                // Deactivate if it goes past the hit zone completely
+                if (this.y > canvasHeight) {
+                    this.active = false;
+                    if (gameRunning) { // Only break streak if missed while playing
+                       resetStreak();
+                    }
+                }
+            }
+
+            // Draw the note on the canvas
+            draw() {
+                ctx.fillStyle = this.color;
+                // Draw a simple rectangle for the note
+                ctx.fillRect(this.lane * laneWidth + 5, this.y, laneWidth - 10, NOTE_HEIGHT);
+                 // Add a white highlight for visibility
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+                ctx.fillRect(this.lane * laneWidth + 8, this.y + 3, laneWidth - 16, NOTE_HEIGHT / 4);
+            }
+        }
+
+        // --- Game Setup ---
+
+        // Function to set up or resize the canvas and game elements
+        function setupCanvas() {
+            // Make canvas dimensions responsive (adjust as needed)
+            canvasWidth = Math.min(window.innerWidth * 0.8, 600); // Max width 600px
+            canvasHeight = window.innerHeight * 0.7; // Use 70% of window height
+
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+            gameContainer.style.width = `${canvasWidth}px`;
+            gameContainer.style.height = `${canvasHeight}px`;
+
+
+            laneWidth = canvasWidth / NUM_LANES;
+            hitZoneY = canvasHeight - HIT_ZONE_HEIGHT; // Y position where the hit zone starts
+        }
+
+        // --- Game Logic ---
+
+        // Function to spawn new notes randomly
+        function spawnNotes() {
+            for (let i = 0; i < NUM_LANES; i++) {
+                if (Math.random() < NOTE_SPAWN_RATE) {
+                    // Add a check to prevent notes spawning too close together in the same lane
+                    const lastNoteInLane = notes.filter(n => n.lane === i && n.y < NOTE_HEIGHT * 3).length === 0;
+                     if(lastNoteInLane) {
+                        notes.push(new Note(i));
+                     }
+                }
+            }
+        }
+
+        // Function to update all active notes
+        function updateNotes() {
+            // Loop backwards for safe removal
+            for (let i = notes.length - 1; i >= 0; i--) {
+                notes[i].update();
+                // Remove notes that are no longer active
+                if (!notes[i].active) {
+                    notes.splice(i, 1);
+                }
+            }
+        }
+
+        // Function to draw all game elements
+        function drawGame() {
+            // Clear canvas
+            ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+            // Draw lane separators (subtle)
+            ctx.strokeStyle = '#444';
+            ctx.lineWidth = 2;
+            for (let i = 1; i < NUM_LANES; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i * laneWidth, 0);
+                ctx.lineTo(i * laneWidth, canvasHeight);
+                ctx.stroke();
+            }
+
+            // Draw hit zone
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)'; // Semi-transparent white
+            ctx.fillRect(0, hitZoneY, canvasWidth, HIT_ZONE_HEIGHT);
+
+            // Draw hit zone feedback flashes
+            for (let i = 0; i < NUM_LANES; i++) {
+                if (laneHitFeedback[LANE_KEYS[i]] && laneHitFeedback[LANE_KEYS[i]] > Date.now()) {
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.5)'; // Brighter flash
+                    ctx.fillRect(i * laneWidth, hitZoneY, laneWidth, HIT_ZONE_HEIGHT);
+                }
+                 // Draw key labels in hit zone
+                ctx.fillStyle = '#ccc';
+                ctx.font = 'bold 20px "Press Start 2P"';
+                ctx.textAlign = 'center';
+                ctx.fillText(LANE_KEYS[i], i * laneWidth + laneWidth / 2, hitZoneY + HIT_ZONE_HEIGHT / 2 + 8);
+            }
+
+
+            // Draw notes
+            notes.forEach(note => note.draw());
+
+            // UI updates are handled via DOM elements
+        }
+
+        // Function to handle key presses
+        function handleKeyPress(event) {
+            if (!gameRunning) return;
+
+            const key = event.key.toUpperCase();
+            if (LANE_KEYS.includes(key)) {
+                let hit = false;
+                const hitCenter = hitZoneY + HIT_ZONE_HEIGHT / 2; // Center line of the hit zone
+
+                 // Trigger hit zone visual feedback
+                 laneHitFeedback[key] = Date.now() + 150; // Flash for 150ms
+
+                // Check notes in the corresponding lane
+                for (let i = notes.length - 1; i >= 0; i--) {
+                    const note = notes[i];
+                    if (note.key === key && note.active) {
+                        // Check if the note's center is within the hit tolerance zone
+                        const noteCenterY = note.y + NOTE_HEIGHT / 2;
+                        const distance = Math.abs(noteCenterY - hitCenter);
+
+                        if (distance <= HIT_TOLERANCE) {
+                            // Successful Hit!
+                            note.active = false; // Deactivate the note
+                            score += 10 + streak; // Add base score + streak bonus
+                            streak++;
+                            hit = true;
+                            // Add particle effect or other hit confirmation here later
+                            break; // Only hit one note per key press in that lane
+                        }
+                    }
+                }
+
+                if (!hit) {
+                    // Missed (pressed key but no note in zone or too early/late)
+                    // Optional: Add a small penalty or just reset streak
+                    // resetStreak(); // Decide if pressing empty lane breaks streak
+                }
+
+                updateUI(); // Update score and streak display
+            }
+        }
+
+        // Function to reset the streak counter
+        function resetStreak() {
+            if (streak > 0) {
+                 // Maybe add a "miss" sound effect here later
+                 streak = 0;
+                 updateUI();
+            }
+        }
+
+        // Function to update the score and streak displays
+        function updateUI() {
+            scoreDisplay.textContent = `Score: ${score}`;
+            streakDisplay.textContent = `Streak: ${streak}`;
+        }
+
+        // --- Game Loop ---
+        function gameLoop() {
+            if (!gameRunning) return;
+
+            // Spawn new notes
+            spawnNotes();
+
+            // Update note positions and states
+            updateNotes();
+
+            // Draw everything
+            drawGame();
+
+            // Request the next frame
+            requestAnimationFrame(gameLoop);
+        }
+
+        // --- Event Listeners ---
+        window.addEventListener('resize', setupCanvas); // Adjust canvas on window resize
+        document.addEventListener('keydown', handleKeyPress);
+
+        // Optional Start Button Listener
+        // startButton.addEventListener('click', () => {
+        //     if (!gameRunning) {
+        //         score = 0;
+        //         streak = 0;
+        //         notes = [];
+        //         updateUI();
+        //         gameRunning = true;
+        //         gameLoop(); // Start the loop
+        //         startButton.textContent = "Restart"; // Or hide it
+        //     } else {
+        //          // Handle restart logic if needed
+        //          score = 0;
+        //          streak = 0;
+        //          notes = [];
+        //          updateUI();
+        //          // No need to call gameLoop again if it's already running,
+        //          // just reset state.
+        //     }
+        // });
+
+
+        // --- Initialisation ---
+        setupCanvas(); // Initial setup
+        updateUI();    // Set initial UI text
+        gameLoop();    // Start the game loop immediately
+
+
+    </script>
+</body>
+</html>

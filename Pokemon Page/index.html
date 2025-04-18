@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Pokémon Page</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            color: #333;
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: #ff6347;
+        }
+
+        .container {
+            width: 80%;
+            margin: 0 auto;
+        }
+
+        .box {
+            background-color: #ffeb3b;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 10px;
+        }
+
+        #pokemon-gallery img {
+            width: 200px;
+            height: auto;
+            margin: 10px;
+            border-radius: 10px;
+        }
+
+        .poke-button {
+            background-color: #ff6347;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .poke-button:hover {
+            background-color: #ff4500;
+        }
+
+        /* Style for the navigation links */
+        nav a {
+            color: #ff6347;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+
+        nav a:hover {
+            color: #ff4500;
+        }
+
+        nav {
+            text-align: center;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Welcome to the Pokémon World</h1>
+    </header>
+
+    <!-- Navigation Section -->
+    <nav>
+        <a href="#about">Go to About Section</a> |
+        <a href="#pokemon-gallery">Go to Pokémon Gallery</a> |
+        <a href="#video">Watch Pokémon Video</a> |
+        <a href="../index.html" class="btn btn-primary text-uppercase">Back to Professional Page</a> | <!-- Link to professional page -->
+        <a href="../PokemonGame.html" class="btn btn-primary text-uppercase">Play Pokémon Guessing Game</a> <!-- Link to Pokémon game -->
+    </nav>
+
+    <div id="about" class="container">
+        <h2>About Pokémon</h2>
+        <p>Pokémon, short for "Pocket Monsters," is a franchise created by Satoshi Tajiri and Ken Sugimori. It centers on fictional creatures called "Pokémon," which humans, known as Pokémon Trainers, catch and train to battle each other for sport.</p>
+    </div>
+
+    <div class="container">
+        <h2>Pokémon Gallery</h2>
+        <div id="pokemon-gallery">
+            <img src="images/pikachubetter.jpg" alt="Pikachu">
+            <img src="images/Bulbasaur.jpg" alt="Bulbasaur">
+            <img src="images/charmander.jpg" alt="Charmander">
+            <img src="images/squirtle.jpg" alt="squirtle">
+            <img src="images/mewtwo.jpg" alt="mewtwo">
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>What is Pokèmon</h2>
+        <div id="video">
+            <iframe width="560" height="315" src="https://www.youtube.com/embed/eIJLjYf6B7M?si=W3WAoDTELDjXYqa4" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>Fun Pokémon Facts</h2>
+        <ol>
+            <li>Pokémon is one of the best-selling video game franchises of all time.</li>
+            <li>There are over 800 Pokémon species as of the latest games.</li>
+            <li>The first Pokémon game was released in 1996 in Japan.</li>
+            <ul>
+                <li>Red and Blue versions were the first in the series.</li>
+                <li>Gold and Silver introduced the second generation of Pokémon.</li>
+            </ul>
+        </ol>
+    </div>
+
+    <div class='tableauPlaceholder' id='viz1744932890522' style='position: relative; width: 100%; height: 600px; margin: 0; padding: 0;'>
+        <noscript>
+            <!-- Removed unnecessary image for the smaller graph -->
+        </noscript>
+        <object class='tableauViz' style='display: block; width: 100%; height: 100%;'>
+            <param name='host_url' value='https://public.tableau.com/' />
+            <param name='embed_code_version' value='3' />
+            <param name='site_root' value='' />
+            <param name='name' value='PokmonChart/PokmonAttackerTypeEffectivenessAnnotated' />
+            <param name='tabs' value='no' />
+            <param name='toolbar' value='yes' />
+            <param name='static_image' value='https://public.tableau.com/static/images/Po/PokmonChart/PokmonAttackerTypeEffectivenessAnnotated/1.png' />
+            <param name='animate_transition' value='yes' />
+            <param name='display_static_image' value='yes' />
+            <param name='display_spinner' value='yes' />
+            <param name='display_overlay' value='yes' />
+            <param name='display_count' value='yes' />
+            <param name='language' value='en-US' />
+        </object>
+    </div>
+
+    <script type='text/javascript'>
+        var divElement = document.getElementById('viz1744932890522');
+        var vizElement = divElement.getElementsByTagName('object')[0];
+        vizElement.style.width = '100%';
+        vizElement.style.height = '600px'; // Adjust height to avoid excess white space
+        
+        var scriptElement = document.createElement('script');
+        scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';
+        vizElement.parentNode.insertBefore(scriptElement, vizElement);
+    </script>
+
+
+</body>
+</html>
+

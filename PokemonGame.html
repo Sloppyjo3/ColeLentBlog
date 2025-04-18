@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokémon Guessing Game</title>
+    <style>
+        /* General styling */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #e0f7fa; /* Light blue background */
+            color: #333;
+            text-align: center;
+            padding: 20px;
+            background-image: url('https://raw.githubusercontent.com/colelent/pokemon-assets/main/pokemon-background.jpg');
+            background-size: cover;
+            background-position: center;
+            height: 100vh;
+            background-attachment: fixed;
+        }
+
+        h1 {
+            color: #ff6347; /* Pokémon red */
+            font-size: 3em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        #game-container {
+            background-color: rgba(255, 255, 255, 0.8); /* Slightly transparent white background */
+            padding: 30px;
+            border-radius: 10px;
+            width: 50%;
+            margin: 0 auto;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        input {
+            padding: 10px;
+            margin: 10px;
+            border: 2px solid #ff6347;
+            border-radius: 5px;
+            font-size: 1.2em;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #ff6347;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.2em;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        button:hover {
+            background-color: #ff4500; /* Darker red on hover */
+        }
+
+        #pokemon-clue {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+        }
+
+        #message {
+            margin-top: 20px;
+            font-size: 1.3em;
+        }
+
+        .pokeball {
+            width: 60px;
+            height: 60px;
+            margin-top: 20px;
+        }
+
+        .btn-container {
+            margin-top: 30px;
+        }
+    </style>
+    <a href="Pokemon Page/index.html" class="btn btn-primary">Back to Pokémon Page</a>
+</head>
+<body>
+
+    <h1>Pokémon Guessing Game</h1>
+    <div id="game-container">
+        <p>Guess the Pokémon based on the clue!</p>
+        <img src="Pokemon Page/images/Poke_Ball.png" alt="Pokeball" class="pokeball">
+        <p id="pokemon-clue"></p>
+        <input type="text" id="user-input" placeholder="Enter your guess" />
+        <button onclick="checkAnswer()">Submit</button>
+        <p id="message"></p>
+    </div>
+
+    <script>
+        // Pokémon data for the first 151 Pokémon
+        const pokemonList = [
+            { name: "Bulbasaur", clue: "It's a grass and poison-type Pokémon, often associated with a plant bulb." },
+            { name: "Ivysaur", clue: "This Pokémon is the evolved form of Bulbasaur." },
+            { name: "Venusaur", clue: "This Pokémon has a large flower on its back." },
+            { name: "Charmander", clue: "A fire-type Pokémon known for the flame on its tail." },
+            { name: "Charmeleon", clue: "This Pokémon is the evolved form of Charmander." },
+            { name: "Charizard", clue: "This fire and flying-type Pokémon is known for its dragon-like appearance." },
+            { name: "Squirtle", clue: "A water-type Pokémon known for its shell and blue color." },
+            { name: "Wartortle", clue: "This Pokémon is the evolved form of Squirtle." },
+            { name: "Blastoise", clue: "This large water-type Pokémon has powerful water cannons on its shell." },
+            { name: "Caterpie", clue: "This bug-type Pokémon evolves into Metapod and Butterfree." },
+            { name: "Metapod", clue: "This is the cocoon stage of Caterpie." },
+            { name: "Butterfree", clue: "A bug and flying-type Pokémon, evolved from Metapod." },
+            { name: "Weedle", clue: "A bug and poison-type Pokémon known for its sting." },
+            { name: "Kakuna", clue: "This Pokémon is in its cocoon stage and evolves into Beedrill." },
+            { name: "Beedrill", clue: "A bug and poison-type Pokémon with large stingers." },
+            { name: "Pidgey", clue: "A small, bird-like Pokémon that evolves into Pidgeotto." },
+            { name: "Pidgeotto", clue: "This bird-like Pokémon evolves from Pidgey and is a bit larger." },
+            { name: "Pidgeot", clue: "A powerful bird Pokémon that evolves from Pidgeotto." },
+            { name: "Rattata", clue: "A small, purple, rodent-like Pokémon known for being quick." },
+            { name: "Raticate", clue: "The evolved form of Rattata." },
+            // 151 Pokémon... Add more Pokémon here
+        ];
+
+        // Randomize the Pokémon list order
+        pokemonList.sort(() => Math.random() - 0.5);
+
+        let currentPokemonIndex = 0; // Start at the first Pokémon
+        let currentPokemon = pokemonList[currentPokemonIndex];
+
+        // Display the first clue
+        document.getElementById("pokemon-clue").innerText = currentPokemon.clue;
+
+        // Check if the user's guess is correct
+        function checkAnswer() {
+            let userInput = document.getElementById("user-input").value.toLowerCase();
+            let messageElement = document.getElementById("message");
+
+            if (userInput === currentPokemon.name.toLowerCase()) {
+                messageElement.innerText = "Correct! The Pokémon was " + currentPokemon.name + "!";
+                messageElement.style.color = "green";
+
+                // Move to the next Pokémon
+                currentPokemonIndex++;
+                if (currentPokemonIndex < pokemonList.length) {
+                    // New Pokémon, update clue and clear input
+                    currentPokemon = pokemonList[currentPokemonIndex];
+                    document.getElementById("pokemon-clue").innerText = currentPokemon.clue;
+                    document.getElementById("user-input").value = ""; // Clear input
+                } else {
+                    // All Pokémon guessed correctly
+                    messageElement.innerText = "Congratulations, you've guessed all Pokémon!";
+                    document.getElementById("pokemon-clue").innerText = "";
+                    document.getElementById("user-input").disabled = true;
+                }
+            } else {
+                messageElement.innerText = "Wrong guess. Try again!";
+                messageElement.style.color = "red";
+            }
+        }
+    </script>
+    
+</body>
+</html>
